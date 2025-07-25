@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IITPL Feedback Collector</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons CDN -->
+  <script type="module">
+    import { CheckCircle, ChevronRight, MessageCircle } from "https://esm.sh/lucide-react@0.356.0";
+
+    window.lucide = { CheckCircle, ChevronRight, MessageCircle };
+  </script>
+
+</head>
+<body class="bg-gray-100">
+  <div id="root" class="p-4"></div>
+
+  <!-- Your Component Script -->
+  <script type="text/babel">
+
+    const { useState } = React;
+    const { ChevronRight, CheckCircle, MessageCircle } = window.lucide;
+
+    const IITPLFeedbackCollector = () => {
+      const [currentStep, setCurrentStep] = useState(0);
+      const [responses, setResponses] = useState({
+        name: '',
+        company: '',
+        email: '',
+        services: [],
+        problem: '',
+        solution: '',
+        recommendation: ''
+      });
+      const [isComplete, setIsComplete] = useState(false);
+
+      const questions = [
+        { id: 'name', question: 'What is your full name?', type: 'text', placeholder: 'Enter your full name' },
+        { id: 'company', question: 'What is your company or organization name?', type: 'text', placeholder: 'Enter your company name' },
+        { id: 'email', question: 'What is your email address?', type: 'email', placeholder: 'Enter your email address' },
+        {
+          id: 'services', question: 'Which IITPL service(s) did you use?', type: 'checkbox',
+          options: ['Building IT Infrastructure', 'Securing Data and IT Networks', 'Software and Compliance Support', 'IT Products', 'Tech Support and Services', 'IT Technologies and Cloud Migration']
+        },
+        { id: 'problem', question: 'What was the problem or challenge you were facing before working with IITPL?', type: 'textarea', placeholder: 'Describe the challenge you were facing...' },
+        { id: 'solution', question: 'How did IITPL help you address or overcome this challenge?', type: 'textarea', placeholder: 'Tell us how IITPL helped you...' },
+        { id: 'recommendation', question: 'Would you recommend IITPL to others? Why or why not?', type: 'textarea', placeholder: 'Share your recommendation...' }
+      ];
+
+      const handleInputChange = (value) => {
+        setResponses(prev => ({ ...prev, [questions[currentStep].id]: value }));
+      };
+
+      const handleNext = () => {
+        if (currentStep < questions.length - 1) {
+          setCurrentStep(currentStep + 1);
+        } else {
+          setIsComplete(true);
+        }
+      };
+
+      const canProceed = () => {
+        const currentQuestion = questions[currentStep];
+        const currentValue = responses[currentQuestion.id];
+        if (currentQuestion.type === 'checkbox') {
+          return currentValue.length > 0;
+        }
+        return currentValue && currentValue.trim() !== '';
+      };
+
+      const handleServiceToggle = (service) => {
+        const currentServices = responses.services;
+        if (currentServices.includes(service)) {
+          handleInputChange(currentServices.filter(s => s !== service));
+        } else {
+          handleInputChange([...currentServices, service]);
+        }
+      };
+
+      if (isComplete) {
+        return (
+          <div className="max-w-4xl mx-auto p-8 bg-white">
+            <div className="text-center mb-8">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Thank You! 🙏</h2>
+              <p className="text-gray-600 mb-6">Your feedback means a lot to us. 💙</p>
+              <button onClick={() => window.print()} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Print Testimonial</button>
+            </div>
+          </div>
+        );
+      }
+
+      const currentQuestion = questions[currentStep];
+
+      return (
+        <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+          {currentStep === 0 && (
+            <div className="text-center mb-8">
+              <MessageCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">IITPL Feedback Collector</h1>
+              <p className="text-gray-600">Thanks for taking the time to share your feedback.</p>
+            </div>
+          )}
+
+          <div className="mb-6">
+            <div className="flex justify-between text-sm text-gray-500 mb-2">
+              <span>Question {currentStep + 1} of {questions.length}</span>
+              <span>{Math.round(((currentStep + 1) / questions.length) * 100)}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}></div>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              {currentQuestion.question}
+            </h2>
+
+            {currentQuestion.type === 'text' && (
+              <input type="text" value={responses[currentQuestion.id]} onChange={(e) => handleInputChange(e.target.value)} placeholder={currentQuestion.placeholder}
+                className="w-full p-3 border border-gray-300 rounded-lg" />
+            )}
+
+            {currentQuestion.type === 'email' && (
+              <input type="email" value={responses[currentQuestion.id]} onChange={(e) => handleInputChange(e.target.value)} placeholder={currentQuestion.placeholder}
+                className="w-full p-3 border border-gray-300 rounded-lg" />
+            )}
+
+            {currentQuestion.type === 'textarea' && (
+              <textarea value={responses[currentQuestion.id]} onChange={(e) => handleInputChange(e.target.value)} placeholder={currentQuestion.placeholder} rows={4}
+                className="w-full p-3 border border-gray-300 rounded-lg resize-none" />
+            )}
+
+            {currentQuestion.type === 'checkbox' && (
+              <div className="space-y-2">
+                {currentQuestion.options.map((option, index) => (
+                  <label key={index} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input type="checkbox" checked={responses.services.includes(option)} onChange={() => handleServiceToggle(option)}
+                      className="mr-3 h-4 w-4 text-blue-600" />
+                    <span className="text-gray-700">{option}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end">
+            <button onClick={handleNext} disabled={!canProceed()}
+              className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all ${
+                canProceed()
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}>
+              {currentStep === questions.length - 1 ? 'Complete' : 'Next'}
+              <ChevronRight className="ml-2 w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<IITPLFeedbackCollector />, document.getElementById('root'));
+  </script>
+</body>
+</html>
